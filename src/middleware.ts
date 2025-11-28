@@ -9,18 +9,16 @@ const allowedOrigins = [
 ];
 
 function getCorsHeaders(origin: string | null) {
-  const headers: Record<string, string> = {
+  const allowedOrigin = origin && allowedOrigins.includes(origin)
+    ? origin
+    : allowedOrigins[0];
+
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Allow-Credentials": "true",
   };
-
-  // Chỉ set origin nếu nó nằm trong allowedOrigins
-  if (origin && allowedOrigins.includes(origin)) {
-    headers["Access-Control-Allow-Origin"] = origin;
-  }
-
-  return headers;
 }
 
 export async function middleware(req: NextRequest) {
@@ -31,10 +29,10 @@ export async function middleware(req: NextRequest) {
   if (pathname.startsWith("/api/")) {
     const corsHeaders = getCorsHeaders(origin);
 
-    // Nếu là preflight request (OPTIONS) → trả về 204
+    // Nếu là preflight request (OPTIONS) → trả về 200 luôn
     if (req.method === "OPTIONS") {
       return new NextResponse(null, {
-        status: 204,
+        status: 200,
         headers: corsHeaders,
       });
     }
@@ -69,7 +67,7 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-// ✅ Matcher - chỉ apply cho API và protected routes
+// ✅ Matcher
 export const config = {
   matcher: [
     "/api/:path*",
