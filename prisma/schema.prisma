@@ -1,0 +1,102 @@
+// schema.prisma
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  passwordHash  String
+  fullName      String?
+  role          String   @default("user")
+  createdAt     DateTime @default(now())
+}
+
+// ✅ MODEL AUTHOR - CHỈ CÓ TÊN
+model Author {
+  id        Int          @id @default(autoincrement())
+  name      String       @unique // ✅ Chỉ có name, unique để tránh trùng
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  
+  posts     PostAuthor[]
+}
+
+// Blog Post
+model BlogPost {
+  id                  Int            @id @default(autoincrement())
+  wpId                Int            @unique
+  title               String
+  slug                String         @unique
+  contentHtml         String         @db.LongText
+  coverImage          String?
+  wpStatus            String
+  isPublishedOnNextjs Boolean        @default(false)
+  displayOrder        Int?
+
+  images     BlogImage[]
+  categories PostCategory[]
+  authors    PostAuthor[]
+
+  wpCreatedAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([displayOrder])
+}
+
+// JOIN TABLE: PostAuthor
+model PostAuthor {
+  postId     Int
+  authorId   Int
+  assignedAt DateTime @default(now())
+
+  post   BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author Author   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@id([postId, authorId])
+  @@index([authorId])
+}
+
+model BlogImage {
+  id     Int      @id @default(autoincrement())
+  url    String
+  postId Int
+  post   BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+}
+
+model Category {
+  id        Int            @id @default(autoincrement())
+  name      String
+  slug      String         @unique
+  createdAt DateTime       @default(now())
+  posts     PostCategory[]
+}
+
+model PostCategory {
+  postId     Int
+  categoryId Int
+  assignedAt DateTime @default(now())
+
+  post     BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([postId, categoryId])
+}
+
+model AboutUsRepresentative {
+  id         Int      @id @default(autoincrement())
+  name       String
+  position   String?
+  bio        String?
+  imageUrl   String
+  uploadedAt DateTime @default(now())
+}
