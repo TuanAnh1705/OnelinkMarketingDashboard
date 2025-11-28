@@ -25,26 +25,50 @@ export async function OPTIONS(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
+    
+    // ✅ LẤY CÁC THAM SỐ TỪ QUERY
     const categoryId = searchParams.get("categoryId")
+    const category = searchParams.get("category") // Từ ExpertSection
+    const perPage = parseInt(searchParams.get("per_page") || "10")
+    const published = searchParams.get("published") === "true"
 
-    const where: any = { isPublishedOnNextjs: true }
+    const where: any = {}
 
-    if (categoryId) {
-      where.categories = { some: { categoryId: Number(categoryId) } }
+    // ✅ XỬ LÝ FILTER PUBLISHED
+    if (published) {
+      where.isPublishedOnNextjs = true
     }
 
+    // ✅ XỬ LÝ FILTER CATEGORY (hỗ trợ cả categoryId và category name)
+    if (categoryId) {
+      where.categories = { some: { categoryId: Number(categoryId) } }
+    } else if (category && category !== "All") {
+      where.categories = {
+        some: {
+          category: {
+            name: category
+          }
+        }
+      }
+    }
+
+    // ✅ FETCH VỚI SORTING ĐÚNG
     const postsData = await prisma.blogPost.findMany({
       where,
-      orderBy: { wpCreatedAt: "desc" },
+      take: perPage,
+      // ✅ QUAN TRỌNG: Sắp xếp theo displayOrder trước, sau đó theo ngày
+      orderBy: [
+        { displayOrder: "asc" }, // Posts có displayOrder lên đầu
+        { wpCreatedAt: "desc" },  // Posts không có displayOrder sắp xếp theo ngày
+      ],
       include: {
         categories: {
           include: {
             category: {
-              select: { name: true }
+              select: { id: true, name: true, slug: true }
             }
           }
         },
-        // ✅ THÊM AUTHORS VÀO ĐÂY
         authors: {
           include: {
             author: {
@@ -55,14 +79,39 @@ export async function GET(req: NextRequest) {
       }
     })
 
-    const posts = postsData.map(post => ({
+    // ✅ SORT THỦ CÔNG để đảm bảo displayOrder null ở cuối
+    const sortedPosts = postsData.sort((a, b) => {
+      // Posts có displayOrder lên đầu
+      if (a.displayOrder !== null && b.displayOrder === null) return -1;
+      if (a.displayOrder === null && b.displayOrder !== null) return 1;
+      
+      // Cả 2 đều có displayOrder -> sort theo số
+      if (a.displayOrder !== null && b.displayOrder !== null) {
+        return a.displayOrder - b.displayOrder;
+      }
+      
+      // Cả 2 đều null -> sort theo ngày mới nhất
+      const dateA = a.wpCreatedAt ? new Date(a.wpCreatedAt).getTime() : 0;
+      const dateB = b.wpCreatedAt ? new Date(b.wpCreatedAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    // ✅ TRANSFORM DATA
+    const posts = sortedPosts.map(post => ({
       id: post.id,
+      wpId: post.wpId,
       title: post.title,
       slug: post.slug,
       coverImage: post.coverImage,
+      wpStatus: post.wpStatus,
+      isPublishedOnNextjs: post.isPublishedOnNextjs,
+      displayOrder: post.displayOrder, // ✅ Thêm field này
       wpCreatedAt: post.wpCreatedAt,
-      categories: post.categories.map(pc => pc.category.name),
-      // ✅ THÊM AUTHORS VÀO RESPONSE
+      categories: post.categories.map(pc => ({
+        id: pc.category.id,
+        name: pc.category.name,
+        slug: pc.category.slug,
+      })),
       authors: post.authors.map(pa => ({
         id: pa.author.id,
         name: pa.author.name
@@ -71,7 +120,7 @@ export async function GET(req: NextRequest) {
     }));
 
     return NextResponse.json(
-      { posts },
+      { posts, total: posts.length },
       {
         headers: {
           'Access-Control-Allow-Origin': '*',
@@ -81,6 +130,7 @@ export async function GET(req: NextRequest) {
       }
     )
   } catch (err: any) {
+    console.error("Error fetching posts:", err)
     return NextResponse.json(
       { error: err.message },
       { 
