@@ -5,20 +5,22 @@ import { verifyTokenEdge } from "@/lib/verify-edge";
 // Các domain được phép gọi API
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://one-link-marketing.vercel.app",
+  "https://onelinkmarketing.vercel.app",
 ];
 
 function getCorsHeaders(origin: string | null) {
-  const allowedOrigin = origin && allowedOrigins.includes(origin)
-    ? origin
-    : allowedOrigins[0];
-
-  return {
-    "Access-Control-Allow-Origin": allowedOrigin,
+  const headers: Record<string, string> = {
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Allow-Credentials": "true",
   };
+
+  // Chỉ set origin nếu nó nằm trong allowedOrigins
+  if (origin && allowedOrigins.includes(origin)) {
+    headers["Access-Control-Allow-Origin"] = origin;
+  }
+
+  return headers;
 }
 
 export async function middleware(req: NextRequest) {
@@ -29,10 +31,10 @@ export async function middleware(req: NextRequest) {
   if (pathname.startsWith("/api/")) {
     const corsHeaders = getCorsHeaders(origin);
 
-    // Nếu là preflight request (OPTIONS) → trả về 200 luôn
+    // Nếu là preflight request (OPTIONS) → trả về 204
     if (req.method === "OPTIONS") {
       return new NextResponse(null, {
-        status: 200,
+        status: 204,
         headers: corsHeaders,
       });
     }
@@ -67,7 +69,7 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-// ✅ Matcher
+// ✅ Matcher - chỉ apply cho API và protected routes
 export const config = {
   matcher: [
     "/api/:path*",
