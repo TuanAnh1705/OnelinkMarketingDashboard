@@ -6,7 +6,8 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "registry:build": "tsx ./scripts/build-registry.ts"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.16",
