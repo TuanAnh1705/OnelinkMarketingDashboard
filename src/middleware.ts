@@ -5,7 +5,7 @@ import { verifyTokenEdge } from "@/lib/verify-edge";
 // Các domain được phép gọi API
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://onelinkmarketing.vercel.app",
+  "https://onelinkmarketing.com",
 ];
 
 function getCorsHeaders(origin: string | null) {
