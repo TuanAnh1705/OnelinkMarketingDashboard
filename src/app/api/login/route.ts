@@ -21,17 +21,17 @@ export async function POST(req: NextRequest) {
       user: { id: result.user.id, email: result.user.email, role: result.user.role },
     });
 
-    // Set HttpOnly cookie
+    // ✅ FIX: Set cookie work cả HTTP và HTTPS
     res.cookies.set({
       name: "token",
       value: result.token,
-      // --- SỬA LỖI BẢO MẬT ---
-      httpOnly: true, // Chuyển thành true để bảo mật. Ngăn JS phía client đọc cookie.
-      // ---------------------
+      httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      // ⭐ THAY ĐỔI Ở ĐÂY
+      secure: false,  // Tắt secure để work với HTTP
+      // Hoặc dùng: secure: process.env.ENABLE_SECURE_COOKIE === "true",
       path: "/",
-      maxAge: 60 * 60, // in seconds (15 minutes)
+      maxAge: 60 * 60 * 24 * 7, // 7 days thay vì 15 phút
     });
 
     return res;
