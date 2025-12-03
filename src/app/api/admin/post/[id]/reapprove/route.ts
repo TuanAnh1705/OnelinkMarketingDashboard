@@ -36,7 +36,7 @@ export async function POST(
     }
 
     // ✅ Dùng transaction để xóa category/author và unpublish
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx : any) => {
       // Xóa category nếu có
       if (categoryId) {
         await tx.postCategory.deleteMany({

@@ -22,10 +22,10 @@ export async function POST(req: NextRequest) {
     });
 
     // ✅ SMART DETECTION - Work cho cả HTTP và HTTPS
-    const protocol = req.headers.get("x-forwarded-proto") || 
-                     (req.url.startsWith("https") ? "https" : "http");
+    const protocol = req.headers.get("x-forwarded-proto") ||
+      (req.url.startsWith("https") ? "https" : "http");
     const isSecure = protocol === "https";
-    
+
     // Debug log
     console.log('[Login] Protocol:', protocol);
     console.log('[Login] Secure cookie:', isSecure);

@@ -71,8 +71,8 @@ export async function GET(req: NextRequest) {
     })
 
     // ✅ TÁCH POSTS CÓ ORDER VÀ KHÔNG CÓ ORDER
-    const postsWithOrder = postsData.filter(p => p.displayOrder !== null)
-    const postsWithoutOrder = postsData.filter(p => p.displayOrder === null)
+    const postsWithOrder = postsData.filter((p: any) => p.displayOrder !== null)
+    const postsWithoutOrder = postsData.filter((p: any) => p.displayOrder === null)
 
     // ✅ TẠO MẢNG KẾT QUẢ VỚI VỊ TRÍ TUYỆT ĐỐI
     const result: typeof postsData = []
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
 
     for (let i = 1; i <= perPage; i++) {
       // Tìm post có displayOrder = i
-      const orderedPost = postsWithOrder.find(p => p.displayOrder === i)
+      const orderedPost = postsWithOrder.find((p: any) => p.displayOrder === i)
       
       if (orderedPost) {
         // ✅ Có post với order = i → Đặt vào vị trí i
@@ -93,8 +93,8 @@ export async function GET(req: NextRequest) {
         } else {
           // Hết posts không order → Kiểm tra xem có post order > perPage không
           const nextOrderedPost = postsWithOrder
-            .filter(p => !result.includes(p))
-            .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))[0]
+            .filter((p: any) => !result.includes(p))
+            .sort((a : any, b: any) => (a.displayOrder || 0) - (b.displayOrder || 0))[0]
           
           if (nextOrderedPost) {
             result.push(nextOrderedPost)
@@ -104,7 +104,7 @@ export async function GET(req: NextRequest) {
     }
 
     // ✅ TRANSFORM DATA
-    const posts = result.filter(Boolean).map(post => ({
+    const posts = result.filter(Boolean).map((post: any) => ({
       id: post.id,
       wpId: post.wpId,
       title: post.title,
@@ -114,12 +114,12 @@ export async function GET(req: NextRequest) {
       isPublishedOnNextjs: post.isPublishedOnNextjs,
       displayOrder: post.displayOrder,
       wpCreatedAt: post.wpCreatedAt,
-      categories: post.categories.map(pc => ({
+      categories: post.categories.map((pc: any) => ({
         id: pc.category.id,
         name: pc.category.name,
         slug: pc.category.slug,
       })),
-      authors: post.authors.map(pa => ({
+      authors: post.authors.map((pa:any) => ({
         id: pa.author.id,
         name: pa.author.name
       })),

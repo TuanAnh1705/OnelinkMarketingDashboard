@@ -1,4 +1,5 @@
 // app/api/admin/post/[id]/categories/route.ts
+
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -31,8 +32,8 @@ export async function GET(
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    const selectedCategoryIds = post.categories.map((pc) => pc.categoryId);
-    const selectedAuthorIds = post.authors.map((pa) => pa.authorId);
+    const selectedCategoryIds = post.categories.map((pc : any) => pc.categoryId);
+    const selectedAuthorIds = post.authors.map((pa : any) => pa.authorId);
 
     return NextResponse.json({
       allCategories,
@@ -71,7 +72,7 @@ export async function PUT(
     }
 
     // ✅ Dùng transaction để update cả categories và authors
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx : any) => {
       // 1. Clear categories cũ
       await tx.postCategory.deleteMany({ where: { postId } });
 

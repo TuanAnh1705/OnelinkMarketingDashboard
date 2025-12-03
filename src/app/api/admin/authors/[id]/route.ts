@@ -1,7 +1,7 @@
 // app/api/admin/authors/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 // GET - Lấy một author
 export async function GET(

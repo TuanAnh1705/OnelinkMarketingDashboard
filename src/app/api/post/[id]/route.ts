@@ -73,11 +73,11 @@ export async function GET(
     // ✅ Format response để trả về authors đúng cấu trúc
     const formattedPost = {
       ...post,
-      authors: post.authors.map(pa => ({
+      authors: post.authors.map((pa : any) => ({
         id: pa.author.id,
         name: pa.author.name
       })),
-      categories: post.categories.map(pc => ({
+      categories: post.categories.map((pc: any) => ({
         id: pc.category.id,
         name: pc.category.name,
         slug: pc.category.slug

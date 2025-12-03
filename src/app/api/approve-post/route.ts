@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx : any) => {
       // 1. Xoá hết categories cũ
       await tx.postCategory.deleteMany({ where: { postId } });
 

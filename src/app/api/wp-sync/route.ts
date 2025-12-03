@@ -110,10 +110,10 @@ export async function GET(req: NextRequest) {
         }
       })
 
-      approvedPosts.forEach(post => {
+      approvedPosts.forEach((post: any) => {
         approvedPostsMap.set(post.wpId, {
           isPublished: post.isPublishedOnNextjs,
-          categoryIds: post.categories.map(c => c.categoryId)
+          categoryIds: post.categories.map((c: any) => c.categoryId)
         })
       })
 
