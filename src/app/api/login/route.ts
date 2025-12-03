@@ -21,17 +21,24 @@ export async function POST(req: NextRequest) {
       user: { id: result.user.id, email: result.user.email, role: result.user.role },
     });
 
-    // ✅ FIX: Set cookie work cả HTTP và HTTPS
+    // ✅ SMART DETECTION - Work cho cả HTTP và HTTPS
+    const protocol = req.headers.get("x-forwarded-proto") || 
+                     (req.url.startsWith("https") ? "https" : "http");
+    const isSecure = protocol === "https";
+    
+    // Debug log
+    console.log('[Login] Protocol:', protocol);
+    console.log('[Login] Secure cookie:', isSecure);
+    console.log('[Login] Host:', req.headers.get("host"));
+
     res.cookies.set({
       name: "token",
       value: result.token,
       httpOnly: true,
       sameSite: "lax",
-      // ⭐ THAY ĐỔI Ở ĐÂY
-      secure: false,  // Tắt secure để work với HTTP
-      // Hoặc dùng: secure: process.env.ENABLE_SECURE_COOKIE === "true",
+      secure: isSecure,  // ⭐ Tự động: HTTPS=true, HTTP=false
       path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 7 days thay vì 15 phút
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return res;
